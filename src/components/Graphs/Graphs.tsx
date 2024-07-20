@@ -52,12 +52,8 @@ const GET_USERS_XP_DATA = gql`
   query GetUsersXPData {
     user {
       id
-      transaction_aggregate {
-        aggregate {
-          sum {
-            amount
-          }
-        }
+      transactions(where: { type: { _eq: "xp" } }) {
+        amount
       }
     }
   }
@@ -84,13 +80,9 @@ interface ProjectXP {
 
 interface UserXP {
   id: number;
-  transaction_aggregate: {
-    aggregate: {
-      sum: {
-        amount: number;
-      };
-    };
-  };
+  transactions: {
+    amount: number;
+  }[];
 }
 
 const Graphs: React.FC = () => {
@@ -135,8 +127,8 @@ const Graphs: React.FC = () => {
     if (dataUsersXP) {
       const ranges: { [key: string]: number } = {};
       dataUsersXP.user.forEach((user) => {
-        const xp = user.transaction_aggregate.aggregate.sum.amount / 1000; // Конвертація в кілобайти
-        const range = `${Math.floor(xp / xpRange) * xpRange}-${Math.floor(xp / xpRange) * xpRange + xpRange}`;
+        const totalXp = user.transactions.reduce((sum, transaction) => sum + transaction.amount, 0) / 1000; // Конвертація в кілобайти
+        const range = `${Math.floor(totalXp / xpRange) * xpRange}-${Math.floor(totalXp / xpRange) * xpRange + xpRange}`;
         if (ranges[range]) {
           ranges[range]++;
         } else {
