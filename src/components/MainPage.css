@@ -1,0 +1,18 @@
+.main-page {
+  padding: 2rem;
+  text-align: center;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+}
+
+.main-page h1 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.main-page p {
+  margin-top: 0.5rem;
+  font-size: 1rem;
+  color: #555;
+}
