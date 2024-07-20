@@ -36,10 +36,15 @@ const MainPageContent: React.FC = () => {
       <h1>Welcome, {user?.login}</h1>
       <p>User ID: {user?.id}</p>
       <p>Email: {user?.email}</p>
-      <button className="logout" onClick={() => {
-        localStorage.removeItem('authToken');
-        window.location.reload();
-      }}>Logout</button>
+      <button
+        className="logout"
+        onClick={() => {
+          localStorage.removeItem('authToken');
+          window.location.reload();
+        }}
+      >
+        Logout
+      </button>
       <Graphs />
     </div>
   );

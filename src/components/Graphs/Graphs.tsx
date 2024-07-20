@@ -48,6 +48,21 @@ const GET_PROJECT_XP_DATA = gql`
   }
 `;
 
+const GET_USERS_XP_DATA = gql`
+  query GetUsersXPData {
+    user {
+      id
+      transaction_aggregate {
+        aggregate {
+          sum {
+            amount
+          }
+        }
+      }
+    }
+  }
+`;
+
 interface Transaction {
   amount: number;
   createdAt: string;
@@ -67,6 +82,17 @@ interface ProjectXP {
   };
 }
 
+interface UserXP {
+  id: number;
+  transaction_aggregate: {
+    aggregate: {
+      sum: {
+        amount: number;
+      };
+    };
+  };
+}
+
 const Graphs: React.FC = () => {
   const { loading: loadingXP, error: errorXP, data: dataXP } = useQuery<{
     transaction: Transaction[];
@@ -77,10 +103,15 @@ const Graphs: React.FC = () => {
   const { loading: loadingProjectXP, error: errorProjectXP, data: dataProjectXP } = useQuery<{
     transaction: ProjectXP[];
   }>(GET_PROJECT_XP_DATA);
+  const { loading: loadingUsersXP, error: errorUsersXP, data: dataUsersXP } = useQuery<{
+    user: UserXP[];
+  }>(GET_USERS_XP_DATA);
 
   const [xpData, setXPData] = useState<Transaction[]>([]);
   const [skillsData, setSkillsData] = useState<Result[]>([]);
   const [projectXPData, setProjectXPData] = useState<ProjectXP[]>([]);
+  const [usersXPData, setUsersXPData] = useState<{ range: string; count: number }[]>([]);
+  const [xpRange, setXpRange] = useState(50);
 
   useEffect(() => {
     if (dataXP) {
@@ -99,6 +130,22 @@ const Graphs: React.FC = () => {
       setProjectXPData(dataProjectXP.transaction);
     }
   }, [dataProjectXP]);
+
+  useEffect(() => {
+    if (dataUsersXP) {
+      const ranges: { [key: string]: number } = {};
+      dataUsersXP.user.forEach((user) => {
+        const xp = user.transaction_aggregate.aggregate.sum.amount / 1000; // Конвертація в кілобайти
+        const range = `${Math.floor(xp / xpRange) * xpRange}-${Math.floor(xp / xpRange) * xpRange + xpRange}`;
+        if (ranges[range]) {
+          ranges[range]++;
+        } else {
+          ranges[range] = 1;
+        }
+      });
+      setUsersXPData(Object.keys(ranges).map((key) => ({ range: key, count: ranges[key] })));
+    }
+  }, [dataUsersXP, xpRange]);
 
   const processedXPData = xpData.map((d) => ({
     amount: d.amount / 1000, // Конвертація в кілобайти
@@ -131,12 +178,12 @@ const Graphs: React.FC = () => {
     .sort((a, b) => b.value - a.value)
     .slice(0, 5);
 
-  if (loadingXP || loadingSkills || loadingProjectXP) return <p>Loading...</p>;
-  if (errorXP || errorSkills || errorProjectXP)
-    return <p>Error: {errorXP?.message || errorSkills?.message || errorProjectXP?.message}</p>;
+  if (loadingXP || loadingSkills || loadingProjectXP || loadingUsersXP) return <p>Loading...</p>;
+  if (errorXP || errorSkills || errorProjectXP || errorUsersXP)
+    return <p>Error: {errorXP?.message || errorSkills?.message || errorProjectXP?.message || errorUsersXP?.message}</p>;
 
   return (
-    <div className="graphs-container">
+    <div className="graphs">
       <div className="graph">
         <h3>XP Progression Over Time</h3>
         <LineChart width={600} height={300} data={processedXPData}>
@@ -165,6 +212,29 @@ const Graphs: React.FC = () => {
           <Tooltip />
           <Legend />
           <Bar dataKey="value" fill="#8884d8" />
+        </BarChart>
+      </div>
+      <div className="graph">
+        <h3>Distribution of users by XP</h3>
+        <div>
+          <div>Amount of XP ranges</div>
+          <div>
+            <input
+              min="2"
+              max="100"
+              type="range"
+              value={xpRange}
+              onChange={(e) => setXpRange(Number(e.target.value))}
+            />
+            <output>{xpRange}</output>
+          </div>
+        </div>
+        <BarChart width={600} height={300} data={usersXPData}>
+          <XAxis dataKey="range" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="count" fill="#8884d8" />
         </BarChart>
       </div>
     </div>
