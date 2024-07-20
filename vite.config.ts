@@ -3,16 +3,14 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [react()],
+  root: './', 
   base: '/Graph_Learning/', 
+  plugins: [react()],
   build: {
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html')
-      },
-      external: [
-        '/Graph_Learning/src/main.tsx'
-      ],
+      }
     }
   },
   resolve: {
