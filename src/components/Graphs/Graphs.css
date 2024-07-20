@@ -1,19 +1,21 @@
-#graph1-svg svg,
-#graph2-svg svg,
-#graph3-svg svg {
+#xpProgression svg,
+#bestSkills svg,
+#projectXP svg {
   background: #2d2d2d;
   border-radius: 8px;
   padding: 20px;
   margin: 20px 0;
 }
 
-#graph1-svg text,
-#graph2-svg text,
-#graph3-svg text {
+#xpProgression text,
+#bestSkills text,
+#projectXP text {
   fill: white;
 }
 
-.axisLabel {
+#xpProgression .axisLabel,
+#bestSkills .axisLabel,
+#projectXP .axisLabel {
   font-size: 12px;
   fill: white;
 }
