@@ -1,14 +1,18 @@
-#graph1, #graph2, #graph3 {
+#xpProgression svg,
+#bestSkills svg {
+  background: #2d2d2d;
+  border-radius: 8px;
+  padding: 20px;
   margin: 20px 0;
-  text-align: center;
 }
 
-svg {
-  width: 100%;
-  height: auto;
+#xpProgression text,
+#bestSkills text {
+  fill: white;
 }
 
-text {
-  font-family: 'Arial', sans-serif;
-  fill: #333;
+#xpProgression .axisLabel,
+#bestSkills .axisLabel {
+  font-size: 12px;
+  fill: white;
 }
