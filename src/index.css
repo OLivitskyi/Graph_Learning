@@ -1,6 +1,128 @@
-body {
+/* Загальні стилі */
+* {
   margin: 0;
   padding: 0;
-  font-family: Arial, sans-serif;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Roboto', Arial, sans-serif;
   background-color: #f8f9fa;
+  color: #333;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Стилі для заголовків */
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+/* Стилі для кнопок */
+button {
+  display: inline-block;
+  padding: 10px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  color: #fff;
+  background-color: #007bff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+/* Стилі для форм */
+form {
+  margin-bottom: 1rem;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 0.5rem 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+/* Стилі для контейнера логіну */
+.login-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 2rem;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+}
+
+.login-container form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-container input {
+  margin-bottom: 1rem;
+}
+
+.login-container button {
+  background-color: #28a745;
+}
+
+.login-container button:hover {
+  background-color: #218838;
+}
+
+.login-container .error {
+  color: red;
+  margin-top: 1rem;
+}
+
+/* Стилі для графіків */
+#graph1, #graph2, #graph3 {
+  margin: 20px 0;
+  text-align: center;
+}
+
+svg {
+  width: 100%;
+  height: auto;
+}
+
+footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  background-color: #007bff;
+  color: white;
+  border-top: 1px solid #0056b3;
 }
