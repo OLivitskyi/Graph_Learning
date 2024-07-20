@@ -1,7 +1,7 @@
 import React from 'react';
 import { ApolloProvider, gql, useQuery } from '@apollo/client';
 import { client } from '../utils/graphql';
-import Graphs from './../components/Graphs/Graphs';
+import Graphs from './Graphs/Graphs';
 import './MainPage.css';
 
 interface User {
@@ -25,14 +25,12 @@ const MainPageContent: React.FC = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) {
-    console.error('GraphQL error:', error);  // Debugging line
+    console.error('GraphQL error:', error);  
     return <p>Error: {error.message}</p>;
   }
 
-  console.log('GraphQL data:', data);  // Debugging line
-
-  const user = data?.user[0]; // Access the first user in the array
-
+  console.log('GraphQL data:', data);  
+  const user = data?.user[0]; 
   return (
     <div className="main-page">
       <h1>Welcome, {user?.login}</h1>
