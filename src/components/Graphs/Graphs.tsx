@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import * as d3 from 'd3';
 import { useQuery, gql } from '@apollo/client';
 import './Graphs.css';
@@ -23,13 +23,10 @@ const GET_SKILLS_DATA = gql`
   }
 `;
 
-const GET_PROJECT_XP_DATA = gql`
-  query GetProjectXPData {
-    transaction(where: { type: { _eq: "xp" } }) {
-      amount
-      object {
-        name
-      }
+const GET_PASS_FAIL_DATA = gql`
+  query GetPassFailData {
+    result {
+      grade
     }
   }
 `;
@@ -46,24 +43,17 @@ interface Result {
   };
 }
 
-interface ProjectXP {
-  amount: number;
-  object: {
-    name: string;
-  };
-}
-
 const Graphs: React.FC = () => {
   const { loading: loadingXP, error: errorXP, data: dataXP } = useQuery<{ transaction: Transaction[] }>(GET_XP_DATA);
   const { loading: loadingSkills, error: errorSkills, data: dataSkills } = useQuery<{ result: Result[] }>(GET_SKILLS_DATA);
-  const { loading: loadingProjectXP, error: errorProjectXP, data: dataProjectXP } = useQuery<{ transaction: ProjectXP[] }>(GET_PROJECT_XP_DATA);
+  const { loading: loadingPassFail, error: errorPassFail, data: dataPassFail } = useQuery<{ result: Result[] }>(GET_PASS_FAIL_DATA);
 
   useEffect(() => {
     if (dataXP) {
-      d3.select('#xpProgression').selectAll('*').remove();
+      d3.select('#graph1-svg').selectAll('*').remove();
 
       const lineData = dataXP.transaction.map((d) => ({
-        amount: d.amount / 1000,  // Конвертуємо в кілобайти
+        amount: d.amount / 1024, // Конвертуємо в кілобайти
         date: new Date(d.createdAt),
       }));
 
@@ -79,7 +69,7 @@ const Graphs: React.FC = () => {
         .x((d) => xScale(d.date))
         .y((d) => yScale(d.amount));
 
-      const svg = d3.select('#xpProgression').append('svg')
+      const svg = d3.select('#graph1-svg').append('svg')
         .attr('width', 500)
         .attr('height', 500);
 
@@ -106,7 +96,7 @@ const Graphs: React.FC = () => {
     }
 
     if (dataSkills) {
-      d3.select('#bestSkills').selectAll('*').remove();
+      d3.select('#graph2-svg').selectAll('*').remove();
 
       const skillsData = dataSkills.result.reduce((acc, curr) => {
         const existingSkill = acc.find(skill => skill.name === curr.object.name);
@@ -136,7 +126,7 @@ const Graphs: React.FC = () => {
         .range([0, radius])
         .domain([0, radarChartOptions.maxValue]);
 
-      const svg = d3.select('#bestSkills').append('svg')
+      const svg = d3.select('#graph2-svg').append('svg')
         .attr('width', radarChartOptions.w + 100)
         .attr('height', radarChartOptions.h + 100)
         .append('g')
@@ -165,66 +155,58 @@ const Graphs: React.FC = () => {
         .style('font-size', '11px');
     }
 
-    if (dataProjectXP) {
-      d3.select('#projectXP').selectAll('*').remove();
+    if (dataPassFail) {
+      d3.select('#graph3-svg').selectAll('*').remove();
 
-      const projectXPData = dataProjectXP.transaction.reduce((acc, curr) => {
-        const existingProject = acc.find(proj => proj.name === curr.object.name);
-        if (existingProject) {
-          existingProject.value += curr.amount / 1000;  // Конвертуємо в кілобайти
-        } else {
-          acc.push({ name: curr.object.name, value: curr.amount / 1000 });
-        }
-        return acc;
-      }, [] as { name: string, value: number }[]).sort((a, b) => b.value - a.value).slice(0, 5);
+      const passFailData = dataPassFail.result.reduce(
+        (acc, { grade }) => {
+          if (grade === 1) acc.pass += 1;
+          else acc.fail += 1;
+          return acc;
+        },
+        { pass: 0, fail: 0 }
+      );
 
-      const xScale = d3.scaleBand()
-        .domain(projectXPData.map(d => d.name))
-        .range([0, 480])
-        .padding(0.1);
+      const pie = d3.pie<number>().value(d => d)([passFailData.pass, passFailData.fail]);
+      const arc = d3.arc<d3.PieArcDatum<number>>().innerRadius(0).outerRadius(200);
 
-      const yScale = d3.scaleLinear()
-        .domain([0, d3.max(projectXPData, d => d.value) as number])
-        .range([480, 0]);
-
-      const svg = d3.select('#projectXP').append('svg')
+      const svg = d3.select('#graph3-svg').append('svg')
         .attr('width', 500)
-        .attr('height', 500);
+        .attr('height', 500)
+        .append('g')
+        .attr('transform', 'translate(250,250)');
 
-      svg.append('g')
-        .selectAll('rect')
-        .data(projectXPData)
-        .enter().append('rect')
-        .attr('x', d => xScale(d.name)!)
-        .attr('y', d => yScale(d.value))
-        .attr('width', xScale.bandwidth())
-        .attr('height', d => 480 - yScale(d.value))
-        .attr('fill', 'steelblue');
-
-      svg.append('g')
-        .call(d3.axisLeft(yScale))
-        .attr('transform', 'translate(0,0)');
-
-      svg.append('g')
-        .call(d3.axisBottom(xScale))
-        .attr('transform', 'translate(0,480)');
+      svg.selectAll('path')
+        .data(pie)
+        .enter().append('path')
+        .attr('d', arc)
+        .attr('fill', (d, i) => (i === 0 ? 'green' : 'red'));
 
       svg.append('text')
-        .attr('x', 250)
-        .attr('y', 20)
+        .attr('x', 0)
+        .attr('y', 220)
         .attr('text-anchor', 'middle')
-        .text('Top 5 Projects by XP');
+        .text('PASS/FAIL Ratio');
     }
-  }, [dataXP, dataSkills, dataProjectXP]);
+  }, [dataXP, dataSkills, dataPassFail]);
 
-  if (loadingXP || loadingSkills || loadingProjectXP) return <p>Loading...</p>;
-  if (errorXP || errorSkills || errorProjectXP) return <p>Error: {errorXP?.message || errorSkills?.message || errorProjectXP?.message}</p>;
+  if (loadingXP || loadingSkills || loadingPassFail) return <p>Loading...</p>;
+  if (errorXP || errorSkills || errorPassFail) return <p>Error: {errorXP?.message || errorSkills?.message || errorPassFail?.message}</p>;
 
   return (
     <>
-      <div id="xpProgression"></div>
-      <div id="bestSkills"></div>
-      <div id="projectXP"></div>
+      <div id="graph1">
+        <h2>XP Progression Over Time</h2>
+        <div id="graph1-svg"></div>
+      </div>
+      <div id="graph2">
+        <h2>Top 5 Skills</h2>
+        <div id="graph2-svg"></div>
+      </div>
+      <div id="graph3">
+        <h2>PASS/FAIL Ratio</h2>
+        <div id="graph3-svg"></div>
+      </div>
     </>
   );
 };
