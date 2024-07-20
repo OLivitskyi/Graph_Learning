@@ -1,21 +1,23 @@
-#xpProgression svg,
-#bestSkills svg,
-#projectXP svg {
+.graphs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.graph-container {
+  margin: 20px;
   background: #2d2d2d;
   border-radius: 8px;
   padding: 20px;
-  margin: 20px 0;
+  width: 650px;
+  color: white;
 }
 
-#xpProgression text,
-#bestSkills text,
-#projectXP text {
-  fill: white;
+.graph-container h3 {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-#xpProgression .axisLabel,
-#bestSkills .axisLabel,
-#projectXP .axisLabel {
-  font-size: 12px;
-  fill: white;
+.graph-container svg {
+  background: #2d2d2d;
 }

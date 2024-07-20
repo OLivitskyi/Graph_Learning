@@ -1,32 +1,24 @@
 import React, { useState } from 'react';
+import { ApolloProvider } from '@apollo/client';
+import { client } from './utils/graphql';
 import Login from './components/Login/Login';
 import MainPage from './components/MainPage';
-import './App.css';
+import Graphs from './components/Graphs/Graphs';
 
 const App: React.FC = () => {
-  const [token, setToken] = useState(localStorage.getItem('authToken') || '');
+  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
 
-  const handleLogin = (newToken: string) => {
-    localStorage.setItem('authToken', newToken);
-    setToken(newToken);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    setToken('');
-  };
+  if (!token) {
+    return <Login setToken={setToken} />;
+  }
 
   return (
-    <div className="app">
-      {token ? (
-        <>
-          <button onClick={handleLogout} className="logout-button">Logout</button>
-          <MainPage token={token} />
-        </>
-      ) : (
-        <Login onLogin={handleLogin} />
-      )}
-    </div>
+    <ApolloProvider client={client}>
+      <div className="App">
+        <MainPage token={token} />
+        <Graphs />
+      </div>
+    </ApolloProvider>
   );
 };
 
