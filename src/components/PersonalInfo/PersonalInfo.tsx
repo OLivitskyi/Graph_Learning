@@ -1,15 +1,17 @@
 import React from 'react';
-import './PersonalInfo.css';  // Import the CSS file
+import './PersonalInfo.css';  
 
 interface PersonalInfoProps {
   name: string;
   email: string;
+  userId: number;
 }
 
-const PersonalInfo: React.FC<PersonalInfoProps> = ({ name, email }) => (
+const PersonalInfo: React.FC<PersonalInfoProps> = ({ name, email, userId }) => (
   <div className="personal-info">
     <h2>{name}</h2>
-    <p>{email}</p>
+    <p>Email: {email}</p>
+    <p>User ID: {userId}</p>
   </div>
 );
 
