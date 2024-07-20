@@ -23,6 +23,17 @@ const GET_SKILLS_DATA = gql`
   }
 `;
 
+const GET_PROJECT_XP_DATA = gql`
+  query GetProjectXPData {
+    transaction(where: { type: { _eq: "xp" } }) {
+      amount
+      object {
+        name
+      }
+    }
+  }
+`;
+
 interface Transaction {
   amount: number;
   createdAt: string;
@@ -35,9 +46,17 @@ interface Result {
   };
 }
 
+interface ProjectXP {
+  amount: number;
+  object: {
+    name: string;
+  };
+}
+
 const Graphs: React.FC = () => {
   const { loading: loadingXP, error: errorXP, data: dataXP } = useQuery<{ transaction: Transaction[] }>(GET_XP_DATA);
   const { loading: loadingSkills, error: errorSkills, data: dataSkills } = useQuery<{ result: Result[] }>(GET_SKILLS_DATA);
+  const { loading: loadingProjectXP, error: errorProjectXP, data: dataProjectXP } = useQuery<{ transaction: ProjectXP[] }>(GET_PROJECT_XP_DATA);
 
   useEffect(() => {
     if (dataXP) {
@@ -97,7 +116,7 @@ const Graphs: React.FC = () => {
           acc.push({ name: curr.object.name, value: curr.grade });
         }
         return acc;
-      }, [] as { name: string, value: number }[]);
+      }, [] as { name: string, value: number }[]).sort((a, b) => b.value - a.value).slice(0, 5);
 
       const radarChartOptions = {
         w: 500,
@@ -145,15 +164,67 @@ const Graphs: React.FC = () => {
         .text(d => d)
         .style('font-size', '11px');
     }
-  }, [dataXP, dataSkills]);
 
-  if (loadingXP || loadingSkills) return <p>Loading...</p>;
-  if (errorXP || errorSkills) return <p>Error: {errorXP?.message || errorSkills?.message}</p>;
+    if (dataProjectXP) {
+      d3.select('#projectXP').selectAll('*').remove();
+
+      const projectXPData = dataProjectXP.transaction.reduce((acc, curr) => {
+        const existingProject = acc.find(proj => proj.name === curr.object.name);
+        if (existingProject) {
+          existingProject.value += curr.amount;
+        } else {
+          acc.push({ name: curr.object.name, value: curr.amount });
+        }
+        return acc;
+      }, [] as { name: string, value: number }[]).sort((a, b) => b.value - a.value).slice(0, 5);
+
+      const xScale = d3.scaleBand()
+        .domain(projectXPData.map(d => d.name))
+        .range([0, 480])
+        .padding(0.1);
+
+      const yScale = d3.scaleLinear()
+        .domain([0, d3.max(projectXPData, d => d.value) as number])
+        .range([480, 0]);
+
+      const svg = d3.select('#projectXP').append('svg')
+        .attr('width', 500)
+        .attr('height', 500);
+
+      svg.append('g')
+        .selectAll('rect')
+        .data(projectXPData)
+        .enter().append('rect')
+        .attr('x', d => xScale(d.name)!)
+        .attr('y', d => yScale(d.value))
+        .attr('width', xScale.bandwidth())
+        .attr('height', d => 480 - yScale(d.value))
+        .attr('fill', 'steelblue');
+
+      svg.append('g')
+        .call(d3.axisLeft(yScale))
+        .attr('transform', 'translate(0,0)');
+
+      svg.append('g')
+        .call(d3.axisBottom(xScale))
+        .attr('transform', 'translate(0,480)');
+
+      svg.append('text')
+        .attr('x', 250)
+        .attr('y', 20)
+        .attr('text-anchor', 'middle')
+        .text('Top 5 Projects by XP');
+    }
+  }, [dataXP, dataSkills, dataProjectXP]);
+
+  if (loadingXP || loadingSkills || loadingProjectXP) return <p>Loading...</p>;
+  if (errorXP || errorSkills || errorProjectXP) return <p>Error: {errorXP?.message || errorSkills?.message || errorProjectXP?.message}</p>;
 
   return (
     <>
       <div id="xpProgression"></div>
       <div id="bestSkills"></div>
+      <div id="projectXP"></div>
     </>
   );
 };

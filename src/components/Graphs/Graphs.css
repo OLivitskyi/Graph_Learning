@@ -1,5 +1,6 @@
 #xpProgression svg,
-#bestSkills svg {
+#bestSkills svg,
+#projectXP svg {
   background: #2d2d2d;
   border-radius: 8px;
   padding: 20px;
@@ -7,12 +8,14 @@
 }
 
 #xpProgression text,
-#bestSkills text {
+#bestSkills text,
+#projectXP text {
   fill: white;
 }
 
 #xpProgression .axisLabel,
-#bestSkills .axisLabel {
+#bestSkills .axisLabel,
+#projectXP .axisLabel {
   font-size: 12px;
   fill: white;
 }
