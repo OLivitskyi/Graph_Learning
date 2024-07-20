@@ -1,30 +1,36 @@
-# React + TypeScript + Vite
+# My GraphQL Profile Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a personal profile page built using React, TypeScript, and Vite. The profile page uses GraphQL to query data from a specified endpoint and displays various pieces of information along with statistical graphs generated using D3.js.
 
-Currently, two official plugins are available:
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Features](#features)
+- [Setup Instructions](#setup-instructions)
+- [GraphQL Queries](#graphql-queries)
+- [Usage](#usage)
+- [Hosting](#hosting)
+- [Technologies Used](#technologies-used)
+- [Expanding the ESLint Configuration](#expanding-the-eslint-configuration)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Project Overview
+The objective of this project is to learn and demonstrate the use of the GraphQL query language by creating a profile page. The profile displays user information and generates statistical graphs based on the data retrieved from the GraphQL endpoint.
 
-## Expanding the ESLint configuration
+## Features
+- User authentication with JWT
+- Display basic user information (ID, login, email)
+- Generate and display statistical graphs using D3.js
+  - XP earned over time (bar chart)
+  - XP progress over time (line chart)
+  - PASS/FAIL ratio (pie chart)
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## Setup Instructions
 
-- Configure the top-level `parserOptions` property like this:
+### Prerequisites
+- Node.js and npm installed
+- Git installed
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json', './tsconfig.app.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
-
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+### Installation
+1. Clone the repository:
+   ```sh
+   git clone <repository-url>
+   cd <repository-name>
