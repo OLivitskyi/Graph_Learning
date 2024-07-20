@@ -9,12 +9,16 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html')
-      }
+      },
+      external: [
+        '/Graph_Learning/src/main.tsx'
+      ],
     }
   },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
     },
+    extensions: ['.js', '.jsx', '.ts', '.tsx']
   }
 });
