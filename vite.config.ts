@@ -3,9 +3,8 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
 
 export default defineConfig({
-  root: './', 
-  base: '/Graph_Learning/', 
   plugins: [react()],
+  base: '/',
   build: {
     rollupOptions: {
       input: {
