@@ -25,17 +25,21 @@ const MainPageContent: React.FC = () => {
 
   if (loading) return <p>Loading...</p>;
   if (error) {
-    console.error('GraphQL error:', error);  
+    console.error('GraphQL error:', error);
     return <p>Error: {error.message}</p>;
   }
 
-  console.log('GraphQL data:', data);  
-  const user = data?.user[0]; 
+  console.log('GraphQL data:', data);
+  const user = data?.user[0];
   return (
     <div className="main-page">
       <h1>Welcome, {user?.login}</h1>
       <p>User ID: {user?.id}</p>
       <p>Email: {user?.email}</p>
+      <button className="logout" onClick={() => {
+        localStorage.removeItem('authToken');
+        window.location.reload();
+      }}>Logout</button>
       <Graphs />
     </div>
   );
