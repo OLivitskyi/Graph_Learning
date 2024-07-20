@@ -1,8 +1,14 @@
-#graph1, #graph2 {
-    margin: 20px;
-    padding: 20px;
-    background-color: #f5f5f5;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
+#graph1, #graph2, #graph3 {
+  margin: 20px 0;
+  text-align: center;
+}
+
+svg {
+  width: 100%;
+  height: auto;
+}
+
+text {
+  font-family: 'Arial', sans-serif;
+  fill: #333;
+}
