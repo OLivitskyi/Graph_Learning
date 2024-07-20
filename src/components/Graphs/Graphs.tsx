@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import * as d3 from 'd3';
 import { useQuery, gql } from '@apollo/client';
 import './Graphs.css';
 
-// GraphQL queries to get data
 const GET_XP_DATA = gql`
   query GetXPData {
     transaction(where: { type: { _eq: "xp" } }) {
@@ -64,7 +63,7 @@ const Graphs: React.FC = () => {
       d3.select('#xpProgression').selectAll('*').remove();
 
       const lineData = dataXP.transaction.map((d) => ({
-        amount: d.amount / 1024, // Convert to kilobytes
+        amount: d.amount / 1000,  // Конвертуємо в кілобайти
         date: new Date(d.createdAt),
       }));
 
@@ -172,9 +171,9 @@ const Graphs: React.FC = () => {
       const projectXPData = dataProjectXP.transaction.reduce((acc, curr) => {
         const existingProject = acc.find(proj => proj.name === curr.object.name);
         if (existingProject) {
-          existingProject.value += curr.amount / 1024; // Convert to kilobytes
+          existingProject.value += curr.amount / 1000;  // Конвертуємо в кілобайти
         } else {
-          acc.push({ name: curr.object.name, value: curr.amount / 1024 });
+          acc.push({ name: curr.object.name, value: curr.amount / 1000 });
         }
         return acc;
       }, [] as { name: string, value: number }[]).sort((a, b) => b.value - a.value).slice(0, 5);

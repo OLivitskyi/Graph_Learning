@@ -8,6 +8,7 @@ interface User {
   id: number;
   login: string;
   email: string;
+  name: string
 }
 
 const GET_USER_INFO = gql`
@@ -16,6 +17,7 @@ const GET_USER_INFO = gql`
       id
       login
       email
+      name
     }
   }
 `;
@@ -33,7 +35,7 @@ const MainPageContent: React.FC = () => {
   const user = data?.user[0]; 
   return (
     <div className="main-page">
-      <h1>Welcome, {user?.login}</h1>
+      <h1>Welcome, {user?.name}</h1>
       <p>User ID: {user?.id}</p>
       <p>Email: {user?.email}</p>
       <Graphs />
