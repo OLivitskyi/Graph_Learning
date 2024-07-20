@@ -1,14 +1,18 @@
-/* Styles for the graph containers */
-#graph1, #graph2, #graph3 {
-  margin: 20px; /* Adds space around the graphs */
-  padding: 20px; /* Adds space within the graphs */
-  background-color: #f5f5f5; /* Sets the background color of the graphs */
-  border-radius: 10px; /* Rounds the corners of the graphs */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Adds a subtle shadow to the graphs */
+#xpProgression svg,
+#bestSkills svg {
+  background: #2d2d2d;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
 }
 
-/* Styles for the graph titles */
-#graph1 text, #graph2 text, #graph3 text {
-  font-size: 16px; /* Sets the font size of the titles */
-  fill: #333; /* Sets the color of the titles */
+#xpProgression text,
+#bestSkills text {
+  fill: white;
+}
+
+#xpProgression .axisLabel,
+#bestSkills .axisLabel {
+  font-size: 12px;
+  fill: white;
 }
