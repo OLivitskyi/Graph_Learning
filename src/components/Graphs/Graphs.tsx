@@ -80,7 +80,7 @@ const Graphs: React.FC<{ userId: number }> = ({ userId }) => {
 
   useEffect(() => {
     if (dataXP) {
-      const processedData = dataXP.transaction.map((d) => ({ ...d, amount: d.amount / 1024 }));
+      const processedData = dataXP.transaction.map((d) => ({ ...d, amount: d.amount / 1000 }));
       setXPData(processedData);
       setFilteredXPData(processDataByPeriod(processedData, period));
     }
@@ -88,7 +88,7 @@ const Graphs: React.FC<{ userId: number }> = ({ userId }) => {
 
   useEffect(() => {
     if (dataProjectXP) {
-      setProjectXPData(dataProjectXP.transaction.map((d) => ({ ...d, amount: d.amount / 1024 })));
+      setProjectXPData(dataProjectXP.transaction.map((d) => ({ ...d, amount: d.amount / 1000 })));
     }
   }, [dataProjectXP]);
 
