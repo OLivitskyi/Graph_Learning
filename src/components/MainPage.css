@@ -2,12 +2,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  background-color: #1e1e1e;
+  color: white;
+  min-height: 100vh;
+  padding: 20px;
 }
 
 .logout {
-  margin-top: 20px;
+  align-self: flex-end;
+  margin: 20px;
   padding: 10px 20px;
-  background-color: #d9534f;
+  background-color: #ff4c4c;
   color: white;
   border: none;
   border-radius: 5px;
@@ -15,5 +20,5 @@
 }
 
 .logout:hover {
-  background-color: #c9302c;
+  background-color: #ff0000;
 }

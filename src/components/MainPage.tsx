@@ -1,17 +1,10 @@
-import React from 'react';
-import { ApolloProvider, gql, useQuery } from '@apollo/client';
-import { client } from '../utils/graphql';
-import Graphs from './Graphs/Graphs';
-import './MainPage.css';
+import React from "react";
+import { useQuery, gql } from "@apollo/client";
+import Graphs from "./Graphs/Graphs";
+import "./MainPage.css";
 
-interface User {
-  id: number;
-  login: string;
-  email: string;
-}
-
-const GET_USER_INFO = gql`
-  query GetUserInfo {
+const GET_USER_DATA = gql`
+  query GetUserData {
     user {
       id
       login
@@ -20,36 +13,27 @@ const GET_USER_INFO = gql`
   }
 `;
 
-const MainPageContent: React.FC = () => {
-  const { loading, error, data } = useQuery<{ user: User[] }>(GET_USER_INFO);
+const MainPage: React.FC<{ token: string }> = ({ token }) => {
+  const { loading, error, data } = useQuery(GET_USER_DATA, {
+    context: {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    },
+  });
 
   if (loading) return <p>Loading...</p>;
-  if (error) {
-    console.error('GraphQL error:', error);
-    return <p>Error: {error.message}</p>;
-  }
+  if (error) return <p>Error: {error.message}</p>;
 
-  console.log('GraphQL data:', data);
-  const user = data?.user[0];
+  const user = data.user[0];
+
   return (
     <div className="main-page">
-      <h1>Welcome, {user?.login}</h1>
-      <p>User ID: {user?.id}</p>
-      <p>Email: {user?.email}</p>
-      <button className="logout" onClick={() => {
-        localStorage.removeItem('authToken');
-        window.location.reload();
-      }}>Logout</button>
-      <Graphs />
+      <h1>Welcome, {user.login}</h1>
+      <p>User ID: {user.id}</p>
+      <p>Email: {user.email}</p>
+      <Graphs userId={user.id} />
     </div>
-  );
-};
-
-const MainPage: React.FC<{ token: string }> = ({ token }) => {
-  return (
-    <ApolloProvider client={client}>
-      <MainPageContent />
-    </ApolloProvider>
   );
 };
 

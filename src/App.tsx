@@ -3,7 +3,6 @@ import { ApolloProvider } from '@apollo/client';
 import { client } from './utils/graphql';
 import Login from './components/Login/Login';
 import MainPage from './components/MainPage';
-import Graphs from './components/Graphs/Graphs';
 import './App.css';
 
 const App: React.FC = () => {
@@ -23,7 +22,6 @@ const App: React.FC = () => {
       <div className="App">
         <button className="logout-button" onClick={handleLogout}>Logout</button>
         <MainPage token={token} />
-        <Graphs />
       </div>
     </ApolloProvider>
   );

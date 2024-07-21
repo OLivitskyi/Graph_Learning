@@ -1,45 +1,33 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, gql } from "@apollo/client";
 import {
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
   Legend,
-  LineChart,
-  Line,
   RadarChart,
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
   Radar,
+  ResponsiveContainer,
 } from "recharts";
 import "./Graphs.css";
 
 const GET_XP_DATA = gql`
-  query GetXPData {
-    transaction(where: { type: { _eq: "xp" } }) {
+  query GetXPData($userId: Int!) {
+    transaction(where: { userId: { _eq: $userId }, type: { _eq: "xp" } }) {
       amount
       createdAt
     }
   }
 `;
 
-const GET_SKILLS_DATA = gql`
-  query GetSkillsData {
-    result {
-      grade
-      object {
-        name
-      }
-    }
-  }
-`;
-
 const GET_PROJECT_XP_DATA = gql`
-  query GetProjectXPData {
-    transaction(where: { type: { _eq: "xp" } }) {
+  query GetProjectXPData($userId: Int!) {
+    transaction(where: { userId: { _eq: $userId }, type: { _eq: "xp" } }) {
       amount
       object {
         name
@@ -48,27 +36,17 @@ const GET_PROJECT_XP_DATA = gql`
   }
 `;
 
-const GET_USERS_XP_DATA = gql`
-  query GetUsersXPData {
-    user {
-      id
-      transactions(where: { type: { _eq: "xp" } }) {
-        amount
-      }
+const GET_AUDITS_DATA = gql`
+  query GetAuditsData($userId: Int!) {
+    audit(where: { auditorId: { _eq: $userId } }) {
+      grade
     }
   }
 `;
 
-interface Transaction {
+interface XPTransaction {
   amount: number;
   createdAt: string;
-}
-
-interface Result {
-  grade: number;
-  object: {
-    name: string;
-  };
 }
 
 interface ProjectXP {
@@ -78,156 +56,142 @@ interface ProjectXP {
   };
 }
 
-interface UserXP {
-  id: number;
-  transactions: {
-    amount: number;
-  }[];
+interface Audit {
+  grade: number;
 }
 
-const Graphs: React.FC = () => {
-  const { loading: loadingXP, error: errorXP, data: dataXP } = useQuery<{
-    transaction: Transaction[];
-  }>(GET_XP_DATA);
-  const { loading: loadingSkills, error: errorSkills, data: dataSkills } = useQuery<{
-    result: Result[];
-  }>(GET_SKILLS_DATA);
-  const { loading: loadingProjectXP, error: errorProjectXP, data: dataProjectXP } = useQuery<{
-    transaction: ProjectXP[];
-  }>(GET_PROJECT_XP_DATA);
-  const { loading: loadingUsersXP, error: errorUsersXP, data: dataUsersXP } = useQuery<{
-    user: UserXP[];
-  }>(GET_USERS_XP_DATA);
+const Graphs: React.FC<{ userId: number }> = ({ userId }) => {
+  const { loading: loadingXP, error: errorXP, data: dataXP } = useQuery<{ transaction: XPTransaction[] }>(GET_XP_DATA, {
+    variables: { userId },
+  });
 
-  const [xpData, setXPData] = useState<Transaction[]>([]);
-  const [skillsData, setSkillsData] = useState<Result[]>([]);
+  const { loading: loadingProjectXP, error: errorProjectXP, data: dataProjectXP } =
+    useQuery<{ transaction: ProjectXP[] }>(GET_PROJECT_XP_DATA, { variables: { userId } });
+
+  const { loading: loadingAudits, error: errorAudits, data: dataAudits } = useQuery<{ audit: Audit[] }>(GET_AUDITS_DATA, {
+    variables: { userId },
+  });
+
+  const [xpData, setXPData] = useState<XPTransaction[]>([]);
   const [projectXPData, setProjectXPData] = useState<ProjectXP[]>([]);
-  const [usersXPData, setUsersXPData] = useState<{ range: string; count: number }[]>([]);
-  const [xpRange, setXpRange] = useState(50);
+  const [auditData, setAuditData] = useState<Audit[]>([]);
+  const [filteredXPData, setFilteredXPData] = useState<XPTransaction[]>([]);
+  const [period, setPeriod] = useState("all");
 
   useEffect(() => {
     if (dataXP) {
-      setXPData(dataXP.transaction);
+      const processedData = dataXP.transaction.map((d) => ({ ...d, amount: d.amount / 1024 }));
+      setXPData(processedData);
+      setFilteredXPData(processDataByPeriod(processedData, period));
     }
-  }, [dataXP]);
-
-  useEffect(() => {
-    if (dataSkills) {
-      setSkillsData(dataSkills.result);
-    }
-  }, [dataSkills]);
+  }, [dataXP, period]);
 
   useEffect(() => {
     if (dataProjectXP) {
-      setProjectXPData(dataProjectXP.transaction);
+      setProjectXPData(dataProjectXP.transaction.map((d) => ({ ...d, amount: d.amount / 1024 })));
     }
   }, [dataProjectXP]);
 
   useEffect(() => {
-    if (dataUsersXP) {
-      const ranges: { [key: string]: number } = {};
-      dataUsersXP.user.forEach((user) => {
-        const totalXp = user.transactions.reduce((sum, transaction) => sum + transaction.amount, 0) / 1000; // Конвертація в кілобайти
-        const range = `${Math.floor(totalXp / xpRange) * xpRange}-${Math.floor(totalXp / xpRange) * xpRange + xpRange}`;
-        if (ranges[range]) {
-          ranges[range]++;
-        } else {
-          ranges[range] = 1;
-        }
-      });
-      setUsersXPData(Object.keys(ranges).map((key) => ({ range: key, count: ranges[key] })));
+    if (dataAudits) {
+      setAuditData(dataAudits.audit);
     }
-  }, [dataUsersXP, xpRange]);
+  }, [dataAudits]);
 
-  const processedXPData = xpData.map((d) => ({
-    amount: d.amount / 1000, // Конвертація в кілобайти
-    date: new Date(d.createdAt).toLocaleDateString(),
-  }));
+  const processDataByPeriod = (data: XPTransaction[], period: string) => {
+    const now = new Date();
+    let filteredData = data;
 
-  const processedSkillsData = skillsData
-    .reduce((acc, curr) => {
-      const existingSkill = acc.find((skill) => skill.name === curr.object.name);
-      if (existingSkill) {
-        existingSkill.value += curr.grade;
-      } else {
-        acc.push({ name: curr.object.name, value: curr.grade });
-      }
-      return acc;
-    }, [] as { name: string; value: number }[])
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 5);
+    if (period !== "all") {
+      const periodMonths = parseInt(period, 10);
+      const startDate = new Date(now.setMonth(now.getMonth() - periodMonths));
+      filteredData = data.filter((d) => new Date(d.createdAt) >= startDate);
+    }
 
-  const processedProjectXPData = projectXPData
-    .reduce((acc, curr) => {
-      const existingProject = acc.find((proj) => proj.name === curr.object.name);
-      if (existingProject) {
-        existingProject.value += curr.amount / 1000; // Конвертація в кілобайти
-      } else {
-        acc.push({ name: curr.object.name, value: curr.amount / 1000 });
-      }
-      return acc;
-    }, [] as { name: string; value: number }[])
-    .sort((a, b) => b.value - a.value)
-    .slice(0, 5);
+    // Сортування даних за датою
+    filteredData.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 
-  if (loadingXP || loadingSkills || loadingProjectXP || loadingUsersXP) return <p>Loading...</p>;
-  if (errorXP || errorSkills || errorProjectXP || errorUsersXP)
-    return <p>Error: {errorXP?.message || errorSkills?.message || errorProjectXP?.message || errorUsersXP?.message}</p>;
+    return filteredData;
+  };
+
+  const processedProjectXPData = projectXPData.reduce((acc, curr) => {
+    const existingProject = acc.find((proj) => proj.name === curr.object.name);
+    if (existingProject) {
+      existingProject.value += curr.amount;
+    } else {
+      acc.push({ name: curr.object.name, value: curr.amount });
+    }
+    return acc;
+  }, [] as { name: string; value: number }[]).sort((a, b) => b.value - a.value).slice(0, 5);
+
+  const doneAmount = auditData.filter((a) => a.grade >= 1).length;
+  const receivedAmount = auditData.filter((a) => a.grade < 1).length;
+  const ratio = (doneAmount / (receivedAmount || 1)).toFixed(2);
+
+  if (loadingXP || loadingProjectXP || loadingAudits) return <p>Loading...</p>;
+  if (errorXP || errorProjectXP || errorAudits) return <p>Error: {errorXP?.message || errorProjectXP?.message || errorAudits?.message}</p>;
 
   return (
-    <div className="graphs">
+    <div className="graphs-container">
       <div className="graph">
         <h3>XP Progression Over Time</h3>
-        <LineChart width={600} height={300} data={processedXPData}>
-          <XAxis dataKey="date" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line type="monotone" dataKey="amount" stroke="#8884d8" />
-        </LineChart>
-      </div>
-      <div className="graph">
-        <h3>Best Skills</h3>
-        <RadarChart outerRadius={90} width={600} height={300} data={processedSkillsData}>
-          <PolarGrid />
-          <PolarAngleAxis dataKey="name" />
-          <PolarRadiusAxis angle={30} domain={[0, 5]} />
-          <Radar name="Skills" dataKey="value" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-          <Legend />
-        </RadarChart>
+        <div className="period-selector">
+          <label htmlFor="period">Period:</label>
+          <select id="period" value={period} onChange={(e) => setPeriod(e.target.value)}>
+            <option value="3">Last 3 months</option>
+            <option value="6">Last 6 months</option>
+            <option value="12">Last 12 months</option>
+            <option value="all">All time</option>
+          </select>
+        </div>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={filteredXPData.map((d) => ({
+            ...d,
+            date: new Date(d.createdAt).toLocaleDateString(),
+          }))}>
+            <XAxis dataKey="date" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line type="monotone" dataKey="amount" stroke="#8884d8" />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
       <div className="graph">
         <h3>Top 5 Projects by XP</h3>
-        <BarChart width={600} height={300} data={processedProjectXPData}>
-          <XAxis dataKey="name" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="value" fill="#8884d8" />
-        </BarChart>
+        <ResponsiveContainer width="100%" height={300}>
+          <RadarChart data={processedProjectXPData}>
+            <PolarGrid />
+            <PolarAngleAxis dataKey="name" />
+            <PolarRadiusAxis />
+            <Radar name="XP" dataKey="value" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+            <Tooltip />
+            <Legend />
+          </RadarChart>
+        </ResponsiveContainer>
       </div>
       <div className="graph">
-        <h3>Distribution of users by XP</h3>
-        <div>
-          <div>Amount of XP ranges</div>
-          <div>
-            <input
-              min="2"
-              max="100"
-              type="range"
-              value={xpRange}
-              onChange={(e) => setXpRange(Number(e.target.value))}
-            />
-            <output>{xpRange}</output>
+        <h3>Audits Ratio</h3>
+        <div className="audit-ratio">
+          <div className="audit-ratio__bars">
+            <div className="audit-ratio__bar audit-ratio__bar--done" style={{ width: `${doneAmount}%` }} />
+            <div className="audit-ratio__bar audit-ratio__bar--received" style={{ width: `${receivedAmount}%` }} />
+          </div>
+          <div className="audit-ratio__info">
+            <div className="audit-ratio__info-item">
+              <span>Done</span>
+              <span>{doneAmount.toFixed(2)} audits</span>
+            </div>
+            <div className="audit-ratio__info-item">
+              <span>Received</span>
+              <span>{receivedAmount.toFixed(2)} audits</span>
+            </div>
+          </div>
+          <div className="audit-ratio__result">
+            <div className="audit-ratio__result-number">{ratio}</div>
+            <div className="audit-ratio__result-label">Best ratio ever!</div>
           </div>
         </div>
-        <BarChart width={600} height={300} data={usersXPData}>
-          <XAxis dataKey="range" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="count" fill="#8884d8" />
-        </BarChart>
       </div>
     </div>
   );
