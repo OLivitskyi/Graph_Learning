@@ -1,6 +1,6 @@
 import React from 'react';
 import { useQuery, gql } from '@apollo/client';
-import './Profile.css';  // Import the CSS file
+import './Profile.css';  
 
 const GET_USER_INFO = gql`
   query GetUserInfo {

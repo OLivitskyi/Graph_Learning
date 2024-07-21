@@ -9,7 +9,9 @@ const container = document.getElementById('root') as HTMLElement;
 const root = ReactDOM.createRoot(container);
 
 root.render(
-  <ApolloProvider client={client}>
-    <App />
-  </ApolloProvider>
+  <React.StrictMode>
+    <ApolloProvider client={client}>
+      <App />
+    </ApolloProvider>
+  </React.StrictMode>
 );

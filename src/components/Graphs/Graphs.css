@@ -66,11 +66,11 @@
   height: 100%;
 }
 
-.audit-ratio__bar--pass {
+.audit-ratio__bar--done {
   background-color: #00C49F;
 }
 
-.audit-ratio__bar--fail {
+.audit-ratio__bar--received {
   background-color: #FF8042;
 }
 
