@@ -4,6 +4,8 @@
   align-items: center;
 }
 
+/* Додано стилі для нового графіку навичок */
+
 .graph {
   margin: 20px 0;
   padding: 20px;
@@ -104,3 +106,4 @@
 .audit-ratio__result-label {
   margin-top: 10px;
 }
+
